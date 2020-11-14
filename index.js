@@ -20,6 +20,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 const userRoutes = require("./routes/user");
 app.use(userRoutes);
 
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Welcome to the airbnb api" });
+});
+
 app.all("*", (req, res) => {
   res.status(404).json({ error: "Page not found" });
 });
