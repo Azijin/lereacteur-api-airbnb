@@ -39,7 +39,7 @@ router.get("/rooms", async (req, res) => {
 
 router.get("/rooms/:id", async (req, res) => {
   try {
-    const offer = await (await Room.findById(req.params.id)).populate({
+    const offer = await Room.findById(req.params.id).populate({
       path: "user",
       select: "account _id",
     });
