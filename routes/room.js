@@ -37,4 +37,19 @@ router.get("/rooms", async (req, res) => {
   }
 });
 
+router.get("/rooms/:id", async (req, res) => {
+  try {
+    const offer = await (await Room.findById(req.params.id)).populate(
+      "user.account"
+    );
+    if (offer) {
+      res.status(200).json(offer);
+    } else {
+      res.status(400).json({ error: "There is no offer matching this id" });
+    }
+  } catch (error) {
+    res.status.json({ error: error.message });
+  }
+});
+
 module.exports = router;
