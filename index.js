@@ -19,6 +19,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 const userRoutes = require("./routes/user");
 app.use(userRoutes);
+const roomRoutes = require("./routes/room");
+app.use(roomRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to the airbnb api" });
