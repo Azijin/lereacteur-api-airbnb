@@ -28,4 +28,13 @@ router.post("/room/publish", isAuthenticated, async (req, res) => {
   }
 });
 
+router.get("/rooms", async (req, res) => {
+  const rooms = await Room.find().select("-description");
+  if (rooms) {
+    res.status(200).json(rooms);
+  } else {
+    res.status(400).json({ error: "Error" });
+  }
+});
+
 module.exports = router;
