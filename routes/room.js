@@ -46,10 +46,60 @@ router.get("/rooms/:id", async (req, res) => {
     if (offer) {
       res.status(200).json(offer);
     } else {
-      res.status(400).json({ error: "There is no offer matching this id" });
+      res.status(400).json({ error: "Offer not found" });
     }
   } catch (error) {
     res.status.json({ error: error.message });
+  }
+});
+
+router.put("/room/update/:id", isAuthenticated, async (req, res) => {
+  try {
+    const user = req.user;
+    const offer = await Room.findById(req.params.id).populate({
+      path: "user",
+      select: "-hash -salt",
+    });
+    if (offer) {
+      if (user.token === offer.user.token) {
+        const { title, description, price, location } = req.fields;
+        if (title || description || price || location || location) {
+          if (title) {
+            offer.title = title;
+          }
+          if (description) {
+            offer.description = description;
+          }
+          if (price) {
+            offer.price = price;
+          }
+          if (location) {
+            if (location.lat) {
+              offer.location.shift();
+              offer.location.unshift(location.lat);
+            }
+            if (location.lng) {
+              offer.location.pop();
+              offer.location.push(location.lng);
+            }
+          }
+          await offer.save();
+          const offerToDisplay = await Room.findById(offer._id).populate({
+            path: "user",
+            select: "account",
+          });
+          res.status(200).json(offerToDisplay);
+        } else {
+          res.status(400).json({ error: "Missing parameters for update" });
+        }
+      } else {
+        res.status("400").json({ error: "Unauthorized" });
+      }
+    } else {
+      res.status(400).json({ error: "Offer not found" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
