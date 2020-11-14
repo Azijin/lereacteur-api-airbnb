@@ -103,4 +103,24 @@ router.put("/room/update/:id", isAuthenticated, async (req, res) => {
   }
 });
 
+router.delete("/room/delete/:id", isAuthenticated, async (req, res) => {
+  try {
+    const offer = await Room.findById(req.params.id).populate({
+      path: "user",
+      select: "token",
+    });
+    const user = req.user;
+    if (offer) {
+      if (offer.user.token === user.token) {
+        await offer.delete();
+        res.status(200).json({ message: "Room deleted" });
+      }
+    } else {
+      res.status(400).json({ error: "Offer not found" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;
