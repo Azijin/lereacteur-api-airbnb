@@ -33,7 +33,7 @@ router.post("/room/publish", isAuthenticated, async (req, res) => {
 });
 
 router.get("/rooms", async (req, res) => {
-  const rooms = await Room.find().select("-description").polulate({
+  const rooms = await Room.find().select("-description").populate({
     path: "user",
     select: "account",
   });
