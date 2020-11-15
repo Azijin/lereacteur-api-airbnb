@@ -2,7 +2,7 @@ const express = require("express");
 const formidable = require("express-formidable");
 const cors = require("cors");
 const mongoose = require("mongoose");
-mongoose.set("debug", true);
+//mongoose.set("debug", true);
 
 require("dotenv").config();
 
