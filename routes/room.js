@@ -71,7 +71,6 @@ router.put(
   async (req, res) => {
     try {
       const { title, description, price, location } = req.fields;
-      const user = req.user;
       const room = req.room;
       if (title || description || price || location) {
         if (title) {
