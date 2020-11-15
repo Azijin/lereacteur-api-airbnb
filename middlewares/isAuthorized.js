@@ -6,6 +6,7 @@ const isAuthorized = async (req, res, next) => {
     if (req.params.id) {
       const user = req.user;
       const room = await Room.findById(req.params.id);
+      const verifyUser = await User.findById(req.params.id);
       if (room) {
         if (String(user._id) === String(room.user)) {
           req.room = room;
@@ -13,11 +14,17 @@ const isAuthorized = async (req, res, next) => {
         } else {
           return res.status(400).json({ error: "Unauthorized" });
         }
+      } else if (verifyUser) {
+        if (String(user._id) === String(verifyUser._id)) {
+          return next();
+        } else {
+          return res.status(400).json({ error: "Unauthorized" });
+        }
       } else {
-        return res.status(400).json({ error: "There is no room with this id" });
+        return res.status(400).json({ error: "Invalid id" });
       }
     } else {
-      return res.status(400).json({ error: "Missing room id" });
+      return res.status(400).json({ error: "Missing id" });
     }
   } catch (error) {
     return res.status(400).json({ error: error.message });
