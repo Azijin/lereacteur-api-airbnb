@@ -12,13 +12,13 @@ const isAuthorized = async (req, res, next) => {
           req.room = room;
           return next();
         } else {
-          return res.status(400).json({ error: "Unauthorized" });
+          return res.status(401).json({ error: "Unauthorized" });
         }
       } else if (verifyUser) {
         if (String(user._id) === String(verifyUser._id)) {
           return next();
         } else {
-          return res.status(400).json({ error: "Unauthorized" });
+          return res.status(401).json({ error: "Unauthorized" });
         }
       } else {
         return res.status(400).json({ error: "Invalid id" });
