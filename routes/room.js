@@ -34,14 +34,45 @@ router.post("/room/publish", isAuthenticated, async (req, res) => {
 });
 
 router.get("/rooms", async (req, res) => {
-  const rooms = await Room.find().select("-description").populate({
-    path: "user",
-    select: "account",
-  });
-  if (rooms) {
-    res.status(200).json(rooms);
-  } else {
-    res.status(400).json({ error: "Error" });
+  try {
+    const filters = {};
+    if (req.query.title) {
+      filters.title = new RegExp(req.query.title, "i");
+    }
+    if (req.query.priceMin) {
+      filters.price = { $gte: req.query.priceMin };
+    }
+    if (req.query.priceMax) {
+      if (filters.price) {
+        filters.price.$lte = req.query.priceMax;
+      } else {
+        filters.price = { $lte: req.query.priceMax };
+      }
+    }
+    let sort = {};
+    if (req.query.sort) {
+      if (req.query.sort === "price-asc") {
+        sort.price = 1;
+      } else if (req.query.sort === "price-desc") {
+        sort.price = -1;
+      }
+    }
+    const count = await Room.countDocuments(filters);
+    const search = Room.find(filters, { description: false })
+      .populate({
+        path: "user",
+        select: "account",
+      })
+      .sort(sort);
+    if (req.query.page) {
+      const page = Number(req.query.page);
+      const limit = Number(req.query.limit);
+      search.limit(limit).skip(limit * (page - 1));
+    }
+    const rooms = await search;
+    res.status(200).json({ count: count, rooms: rooms });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
