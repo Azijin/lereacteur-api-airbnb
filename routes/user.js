@@ -13,6 +13,7 @@ const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
 
 const User = require("../models/User");
+const Room = require("../models/Room");
 const isAuthenticated = require("../middlewares/isAuthenticated");
 const isAuthorized = require("../middlewares/isAuthorized");
 
@@ -89,6 +90,47 @@ router.post("/user/log_in", async (req, res) => {
         }
       } else {
         res.status(400).json({ error: "Unauthorized" });
+      }
+    } else {
+      res.status(400).json({ error: "Missing parameters" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get("/user/:id", async (req, res) => {
+  try {
+    if (req.params.id) {
+      const user = await User.findById(req.params.id).select(
+        "account rooms _id"
+      );
+      if (user) {
+        res.status(200).json(user);
+      } else {
+        res.status(400).json({ error: "No user found with this id" });
+      }
+    } else {
+      res.status(400).json({ error: "Missing parameters" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get("/user/rooms/:id", async (req, res) => {
+  try {
+    if (req.params.id) {
+      const user = await User.findById(req.params.id);
+      if (user) {
+        const rooms = await Room.find({ user: req.params.id });
+        if (rooms.length !== 0) {
+          res.status(200).json(rooms);
+        } else {
+          res.status(200).json({ message: "This user has no room" });
+        }
+      } else {
+        res.status(400).json({ error: "No user found with this id" });
       }
     } else {
       res.status(400).json({ error: "Missing parameters" });
