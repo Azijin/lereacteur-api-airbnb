@@ -140,6 +140,88 @@ router.get("/user/rooms/:id", async (req, res) => {
   }
 });
 
+router.put("/user/update", isAuthenticated, async (req, res) => {
+  try {
+    const { email, username, name, firstname, description } = req.fields;
+    if (email || username || name || firstname || description) {
+      const user = req.user;
+      if (email) {
+        const verifyEmail = await User.findOne({ "account.email": email });
+        if (verifyEmail) {
+          return res.status(400).json({ message: "This is already used" });
+        } else {
+          user.account.email = email;
+        }
+      }
+      if (username) {
+        const verifyUsername = await User.findOne({
+          "account.username": username,
+        });
+        if (verifyUsername) {
+          return res
+            .status(400)
+            .json({ message: "This username is already used" });
+        } else {
+          user.account.username = username;
+        }
+      }
+      if (name) {
+        user.account.name = name;
+      }
+      if (description) {
+        user.account.description = description;
+      }
+      await user.save();
+      res.status(200).json({
+        _id: user._id,
+        account: user.account,
+        rooms: user.rooms,
+      });
+    } else {
+      res.status(400).json({ error: "Missing parameters" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put("/user/update_password", isAuthenticated, async (req, res) => {
+  try {
+    const { previousPassword, newPassword } = req.fields;
+    if (previousPassword && newPassword) {
+      const user = await User.findById(req.user._id);
+      const hashToVerify = SHA256(previousPassword + user.salt).toString(
+        encBase64
+      );
+      if (hashToVerify === user.hash) {
+        const verifyNewPassword = SHA256(newPassword + user.salt).toString(
+          encBase64
+        );
+        if (verifyNewPassword !== hashToVerify) {
+          const newSalt = uid2(64);
+          const newHash = SHA256(newPassword + newSalt).toString(encBase64);
+          const newToken = uid2(64);
+
+          user.salt = newSalt;
+          user.hash = newHash;
+          user.token = newToken;
+          await user.save();
+        } else {
+          res.status(400).json({
+            error: "Previous password and newpassword must be different",
+          });
+        }
+      } else {
+        res.status(400).json({ error: "Wrong previous password" });
+      }
+    } else {
+      res.status(200).json({ error: "Missing parameters" });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.messsage });
+  }
+});
+
 router.put(
   "/user/upload_picture/:id",
   isAuthenticated,
