@@ -145,7 +145,7 @@ router.put(
       if (req.files.picture) {
         const room = req.room;
         const photosRoom = room.photos;
-        if (photos.length < 5) {
+        if (photosRoom.length < 5) {
           const photo = req.files.picture.path;
           const user = req.user;
           await cloudinary.uploader.upload(
